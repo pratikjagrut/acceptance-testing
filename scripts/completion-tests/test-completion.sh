@@ -141,16 +141,17 @@ if [[ -f ${BINARY_PATH_DOCKER}/${BINARY_NAME} ]]; then
    BASH4_IMAGE=completion-bash4
 
    echo;echo;
-   docker build -t ${BASH4_IMAGE} -f - ${COMP_DIR} <<- EOF
+   podman build -t ${BASH4_IMAGE} -f - ${COMP_DIR} <<- EOF
       FROM bash:4.4
       RUN apk update && apk add bash-completion ca-certificates
       COPY ./ ${COMP_DIR}/
 EOF
-   docker run --rm \
+   podman run --rm \
               -e ROBOT_HELM_V3=${ROBOT_HELM_V3} \
               -e ROBOT_DEBUG_LEVEL=${ROBOT_DEBUG_LEVEL} \
               -e COMP_DIR=${COMP_DIR} \
               -e KUBECONFIG=${KUBECONFIG} \
+              --privileged \
               ${BASH4_IMAGE} bash -c "source ${COMP_SCRIPT}"
 
    ########################################
@@ -162,7 +163,7 @@ EOF
    BASH3_IMAGE=completion-bash3
 
    echo;echo;
-   docker build -t ${BASH3_IMAGE} -f - ${COMP_DIR} <<- EOF
+   podman build -t ${BASH3_IMAGE} -f - ${COMP_DIR} <<- EOF
       FROM bash:3.2
       RUN apk update && apk add ca-certificates
       # For bash 3.2, the bash-completion package required is version 1.3
@@ -171,12 +172,13 @@ EOF
                tar xvz -C /usr/share/bash-completion --strip-components 1 bash-completion-1.3/bash_completion
       COPY ./ ${COMP_DIR}/
 EOF
-   docker run --rm \
+   podman run --rm \
               -e BASH_COMPLETION=/usr/share/bash-completion \
               -e ROBOT_HELM_V3=${ROBOT_HELM_V3} \
               -e ROBOT_DEBUG_LEVEL=${ROBOT_DEBUG_LEVEL} \
               -e COMP_DIR=${COMP_DIR} \
               -e KUBECONFIG=${KUBECONFIG} \
+              --privileged \
               ${BASH3_IMAGE} bash -c "source ${COMP_SCRIPT}"
 
    ########################################
@@ -186,16 +188,17 @@ EOF
    BASH_IMAGE=completion-bash-centos
 
    echo;echo;
-   docker build -t ${BASH_IMAGE} -f - ${COMP_DIR} <<- EOF
+   podman build -t ${BASH_IMAGE} -f - ${COMP_DIR} <<- EOF
       FROM centos
       RUN yum install -y bash-completion which
       COPY ./ ${COMP_DIR}/
 EOF
-   docker run --rm \
+   podman run --rm \
               -e ROBOT_HELM_V3=${ROBOT_HELM_V3} \
               -e ROBOT_DEBUG_LEVEL=${ROBOT_DEBUG_LEVEL} \
               -e COMP_DIR=${COMP_DIR} \
               -e KUBECONFIG=${KUBECONFIG} \
+              --privileged \
               ${BASH_IMAGE} bash -c "source ${COMP_SCRIPT}"
 
 # Zsh completion tests no longer work now that helm
